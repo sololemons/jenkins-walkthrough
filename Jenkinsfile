@@ -1,5 +1,9 @@
 pipeline {
     agent any
+
+    tools{
+        npm 'npm'
+    }
     
     environment {
         // AWS credentials configured in Jenkins
