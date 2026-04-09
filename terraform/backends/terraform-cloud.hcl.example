@@ -1,0 +1,39 @@
+# Terraform Cloud Backend Configuration Example
+#
+# Use this when you want managed state with HashiCorp Terraform Cloud
+#
+# Prerequisites:
+#   1. Create account at https://app.terraform.io
+#   2. Create API token at https://app.terraform.io/app/settings/tokens
+#   3. Run: terraform login (paste your API token when prompted)
+#   4. Create organization in Terraform Cloud
+#
+# Benefits:
+#   - Managed by HashiCorp
+#   - Free tier available (state + runs + VCS integration)
+#   - Web UI for state management
+#   - Built-in team collaboration
+#   - Run history and approvals
+
+terraform {
+  cloud {
+    # Your organization name in Terraform Cloud
+    organization = "my-org"
+    
+    workspaces {
+      # Workspace name - use different ones for different environments
+      name = "devops13-studio-dev"
+    }
+  }
+}
+
+# Usage:
+# 1. Create account at https://app.terraform.io
+# 2. Create organization (e.g., "my-org")
+# 3. Run: terraform login (generates and stores API token)
+# 4. Replace the backend block in main.tf with this one
+# 5. Run: terraform init
+# 6. Answer "yes" when prompted to migrate state
+#
+# Now all state is managed by Terraform Cloud!
+# Check https://app.terraform.io/app/your-org/workspaces/ to see your state
