@@ -62,7 +62,6 @@ pipeline {
             }
         }
         
-        // Archive stage with artifact fingerprinting
         stage('Archive') {
             steps {
                 archiveArtifacts artifacts: '*.tgz', fingerprint: true
