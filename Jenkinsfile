@@ -69,7 +69,6 @@ pipeline {
             }
         }
         
-        // Publish stage using withCredentials to authenticate
         stage('Publish to Nexus') {
             steps {
                 withCredentials([usernamePassword(credentialsId: '${NEXUS_CREDENTIALS_ID}', passwordVariable: 'NEXUS_PASS', usernameVariable: 'NEXUS_USER')]) {
