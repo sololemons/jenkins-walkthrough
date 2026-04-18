@@ -2,6 +2,7 @@ pipeline {
     agent {
         docker {
             image 'node:22.14.0'
+            args '--network cicd-net'
         }
     }
     
