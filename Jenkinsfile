@@ -7,7 +7,7 @@ pipeline {
     
     environment {
         NEXUS_CREDENTIALS_ID = 'nexus-creds' 
-        NEXUS_URL = "http://nexus:8081/repository/java-repo" 
+        NEXUS_URL = "http://nexus:8081/repository/week5-ip-nexus-repository/"
 
         GIT_SHA              = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
         APP_VERSION          = "1.0.0-${GIT_SHA}"
