@@ -1,31 +1,29 @@
 pipeline {
-    agent any
-
-    tools {
-        nodejs 'NodeJS'
+    agent {
+        docker {
+            image 'node:20.11.0-alpine'
+        }
     }
     
     environment {
-        // AWS credentials configured in Jenkins
-        AWS_CREDENTIALS = credentials('aws-deploy-credentials')
-        AWS_REGION = 'us-east-1'
-        
-        // Update these with values from: terraform output
-        S3_BUCKET = 'jenkins-walkthrough-demo-20260409-abc123'  // Change to your bucket
-        CLOUDFRONT_DISTRIBUTION_ID = 'E3EAE5FB8NGEQD' // Change to your distribution ID
+        NEXUS_CREDENTIALS_ID = 'nexus-creds' 
+        NEXUS_URL = "http://nexus:8081/repository/java-repo" 
+
+        GIT_SHA              = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+        APP_VERSION          = "1.0.0-${GIT_SHA}"
     }
     
     stages {
-        stage('Clone repo') {
+        stage('Checkout') {
             steps {
-                git branch: 'master', url:'https://github.com/kadimasum/jenkins-walkthrough'
-                echo "Code checked out from ${GIT_BRANCH}"
+                checkout scm
+                echo "Code checked out from ${GIT_BRANCH} at commit ${GIT_SHA}"
             }
         }
         
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                sh 'npm ci'
                 echo "Dependencies installed"
             }
         }
@@ -37,44 +35,59 @@ pipeline {
             }
         }
         
-        stage('Test') {
-            steps {
-                sh 'npm test'
-                echo "Unit tests passed"
+        stage('Verify') {
+            parallel {
+                stage('Test') {
+                    steps {
+                        sh 'npm test'
+                        echo "Unit tests passed"
+                    }
+                }
+                stage('Security Audit') {
+                    steps {
+                        sh 'npm audit --audit-level=high'
+                        echo "Security audit passed"
+                    }
+                }
             }
         }
         
         stage('Build') {
             steps {
+                // Injects the <semver>-<git-sha> version into package.json before building
+                sh 'npm version ${APP_VERSION} --no-git-tag-version'
                 sh 'npm run build'
-                echo "Production build created"
-                sh 'ls -la dist/'
+                
+                // npm pack creates the downloadable tarball artifact for Nexus
+                sh 'npm pack'
+                echo "Production build and tarball created"
             }
         }
         
-        stage('Deploy to S3') {
+        // Archive stage with artifact fingerprinting
+        stage('Archive') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-deploy-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                    sh '''
-                        export AWS_DEFAULT_REGION=${AWS_REGION}
-                        echo "Uploading files to S3..."
-                        aws s3 sync dist/ s3://${S3_BUCKET}/ --delete --cache-control "max-age=3600" --exclude ".git*"
-                        echo "Files uploaded to S3"
-                    '''
-                }
+                archiveArtifacts artifacts: '*.tgz', fingerprint: true
+                echo "Artifacts archived and fingerprinted"
             }
         }
         
-        stage('Invalidate CloudFront Cache') {
+        // Publish stage using withCredentials to authenticate
+        stage('Publish to Nexus') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-deploy-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                withCredentials([usernamePassword(credentialsId: '${NEXUS_CREDENTIALS_ID}', passwordVariable: 'NEXUS_PASS', usernameVariable: 'NEXUS_USER')]) {
                     sh '''
-                        export AWS_DEFAULT_REGION=${AWS_REGION}
-                        echo "Invalidating CloudFront cache..."
-                        aws cloudfront create-invalidation \
-                            --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} \
-                            --paths "/*"
-                        echo "CloudFront cache invalidated"
+                        echo "Setting up temporary .npmrc..."
+                        echo "registry=${NEXUS_URL}" > .npmrc
+                        
+                        AUTH=$(echo -n "${NEXUS_USER}:${NEXUS_PASS}" | base64)
+                        echo "//${NEXUS_URL#*://}:_auth=${AUTH}" >> .npmrc
+                        
+                        echo "Publishing version ${APP_VERSION} to Nexus..."
+                        npm publish *.tgz
+                        
+                        echo "Cleaning up credentials..."
+                        rm -f .npmrc
                     '''
                 }
             }
@@ -82,27 +95,26 @@ pipeline {
     }
     
     post {
+        always {
+            echo "Cleaning up workspace..."
+            // You can also add `junit '**/test-results.xml'` here if you output test reports
+            cleanWs()
+        }
         success {
             echo """
             ========================================
             DEPLOYMENT SUCCESSFUL!
             ========================================
-            Site is live at:
-            https://${CLOUDFRONT_DISTRIBUTION_ID}
-            
-            S3 Bucket: ${S3_BUCKET}
-            CloudFront Distribution: ${CLOUDFRONT_DISTRIBUTION_ID}
-            Build: ${BUILD_NUMBER}
+            Versioned artifact published: ${APP_VERSION}
+            Registry URL: ${NEXUS_URL}your-package-name/-/${APP_VERSION}.tgz
             ========================================
             """
         }
-        
         failure {
-            echo "Deployment failed. Check logs above for details."
+            echo "PIPELINE FAILURE: The broken-build contract has been triggered. Please review the logs above to identify the fault."
         }
-        
-        always {
-            cleanWs()
+        changed {
+            echo "STATUS TRANSITION: The pipeline status has changed since the last run (e.g., from failing to successful, or vice versa)."
         }
     }
 }
