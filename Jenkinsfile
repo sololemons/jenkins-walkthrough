@@ -54,11 +54,9 @@ pipeline {
         
         stage('Build') {
             steps {
-                // Injects the <semver>-<git-sha> version into package.json before building
                 sh 'npm version ${APP_VERSION} --no-git-tag-version'
                 sh 'npm run build'
                 
-                // npm pack creates the downloadable tarball artifact for Nexus
                 sh 'npm pack'
                 echo "Production build and tarball created"
             }
