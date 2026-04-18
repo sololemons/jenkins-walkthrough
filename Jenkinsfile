@@ -93,7 +93,6 @@ pipeline {
     post {
         always {
             echo "Cleaning up workspace..."
-            // You can also add `junit '**/test-results.xml'` here if you output test reports
             cleanWs()
         }
         success {
