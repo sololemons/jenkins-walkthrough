@@ -71,7 +71,7 @@ pipeline {
         
         stage('Publish to Nexus') {
             steps {
-                withCredentials([usernamePassword(credentialsId: '${NEXUS_CREDENTIALS_ID}', passwordVariable: 'NEXUS_PASS', usernameVariable: 'NEXUS_USER')]) {
+                withCredentials([usernamePassword(credentialsId: env.NEXUS_CREDENTIALS_ID, passwordVariable: 'NEXUS_PASS', usernameVariable: 'NEXUS_USER')]) {
                     sh '''
                         echo "Setting up temporary .npmrc..."
                         echo "registry=${NEXUS_URL}" > .npmrc
