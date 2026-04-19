@@ -20,7 +20,7 @@ pipeline {
     }
 
     stages {
-        
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -46,6 +46,17 @@ pipeline {
             }
         }
 
+        stage('Build') {
+            steps {
+                sh """
+                    npm version ${APP_VERSION} --no-git-tag-version
+                    npm run build
+                    npm pack
+                """
+                echo "Build and packaging complete"
+            }
+        }
+
         stage('Verify') {
             parallel {
 
@@ -62,17 +73,6 @@ pipeline {
                         echo "Security audit completed"
                     }
                 }
-            }
-        }
-
-        stage('Build') {
-            steps {
-                sh """
-                    npm version ${APP_VERSION} --no-git-tag-version
-                    npm run build
-                    npm pack
-                """
-                echo "Build and packaging complete"
             }
         }
 
