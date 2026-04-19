@@ -44,7 +44,7 @@ pipeline {
 
                 stage('Test') {
                     steps {
-                        sh 'npm test -- --ci --reporters=jest-junit'
+                        sh 'npm test -- --reporter=junit --outputFile=junit.xml'
                         echo "Tests passed"
                     }
                 }
