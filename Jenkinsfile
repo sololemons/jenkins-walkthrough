@@ -144,5 +144,4 @@ ${PUBLIC_NEXUS_URL}${PACKAGE_NAME}/-/${PACKAGE_NAME}-${APP_VERSION}.tgz
         }
     }
 
-    
 }
