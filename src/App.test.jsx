@@ -12,6 +12,8 @@ describe('App', () => {
     ).toBeInTheDocument()
     expect(true).toBe(false);
 
+    
+
     expect(
       screen.getByRole('link', { name: /book a strategy call/i }),
     ).toHaveAttribute('href', '#contact')
