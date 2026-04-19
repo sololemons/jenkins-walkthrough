@@ -143,4 +143,6 @@ ${PUBLIC_NEXUS_URL}${PACKAGE_NAME}/-/${PACKAGE_NAME}-${APP_VERSION}.tgz
             echo "STATUS CHANGE: Pipeline result differs from previous run."
         }
     }
+
+    
 }
