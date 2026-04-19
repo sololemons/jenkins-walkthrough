@@ -9,6 +9,7 @@ pipeline {
     environment {
         NEXUS_CREDENTIALS_ID = 'nexus-creds'
         NEXUS_URL = "http://nexus:8081/repository/week5-ip-nexus-repository/"
+        PUBLIC_NEXUS_URL = "http://localhost:8081/repository/week5-ip-nexus-repository/" 
         PACKAGE_NAME = "kijanikiosk-api"  
     }
 
@@ -123,7 +124,7 @@ DEPLOYMENT SUCCESSFUL
 ========================================
 Version: ${APP_VERSION}
 Artifact URL:
-${NEXUS_URL}${PACKAGE_NAME}/-/${PACKAGE_NAME}-${APP_VERSION}.tgz
+${PUBLIC_NEXUS_URL}${PACKAGE_NAME}/-/${PACKAGE_NAME}-${APP_VERSION}.tgz
 ========================================
 """
         }
