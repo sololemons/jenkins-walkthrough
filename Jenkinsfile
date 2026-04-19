@@ -6,6 +6,12 @@ pipeline {
         }
     }
 
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+        timeout(time: 30, unit: 'MINUTES')
+    }
+
     environment {
         NEXUS_CREDENTIALS_ID = 'nexus-creds'
         NEXUS_URL = "http://nexus:8081/repository/week5-ip-nexus-repository/"
