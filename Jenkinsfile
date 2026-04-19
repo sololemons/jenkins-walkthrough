@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         NEXUS_CREDENTIALS_ID = 'nexus-creds'
-        NEXUS_URL = "http://nexus:8089/repository/week5-ip-nexus-repository/"
+        NEXUS_URL = "http://nexus:8081/repository/week5-ip-nexus-repository/"
         PUBLIC_NEXUS_URL = "http://localhost:8081/repository/week5-ip-nexus-repository/" 
         PACKAGE_NAME = "kijanikiosk-api"  
     }
