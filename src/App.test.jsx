@@ -10,6 +10,7 @@ describe('App', () => {
         name: /one focused class ready for launch/i,
       }),
     ).toBeInTheDocument()
+    expect(true).toBe(false);
 
     expect(
       screen.getByRole('link', { name: /book a strategy call/i }),

@@ -1,6 +1,5 @@
 import './App.css'
 
- const intentionallyBroken = "This will fail the linter!";
 
 const highlights = [
   { label: 'Projects launched', value: '48' },
