@@ -35,6 +35,7 @@ function App() {
               deliberate from the first scroll.
             </p>
           </div>
+          const intentionallyBroken = "This will fail the linter!";
           <div className="hero-panel">
             <p className="panel-label">This week’s availability</p>
             <p className="panel-value">3 kickoff slots left</p>
